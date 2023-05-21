@@ -6,9 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devsuperior.dslist.dto.GameListDTO;
-import com.devsuperior.dslist.dto.GameMinDTO;
-import com.devsuperior.dslist.entities.Game;
 import com.devsuperior.dslist.entities.GameList;
+import com.devsuperior.dslist.projections.GameMinProjection;
 import com.devsuperior.dslist.repositories.GameListRepository;
 import com.devsuperior.dslist.repositories.GameRepository;
 
@@ -17,27 +16,47 @@ public class GameListService {
 
 	private GameListRepository gameListRepository;
 
-	public GameListRepository getGameRepository() {
+	private GameRepository gameRepository;
+
+	public GameListService(GameListRepository gameListRepository, GameRepository gameRepository) {
+		super();
+		this.gameListRepository = gameListRepository;
+		this.gameRepository = gameRepository;
+	}
+
+	public GameListRepository getGameListRepository() {
 		return gameListRepository;
 	}
 
-	public void setGameRepository(GameListRepository gameRepository) {
-		this.gameListRepository = gameRepository;
+	public void setGameListRepository(GameListRepository gameListRepository) {
+		this.gameListRepository = gameListRepository;
 	}
 
-	public GameListService(GameListRepository gameRepository) {
-		super();
-		this.gameListRepository = gameRepository;
+	public GameRepository getGameRepository() {
+		return gameRepository;
 	}
-	
 
+	public void setGameRepository(GameRepository gameRepository) {
+		this.gameRepository = gameRepository;
+	}
 
 	@Transactional(readOnly = true)
 	public List<GameListDTO> findAll() {
 		List<GameList> result = gameListRepository.findAll();
 		return result.stream().map(x -> new GameListDTO(x)).toList();
 	}
-	
-	
+
+	@Transactional
+	public void move(Long listId, int sourceIndex, int destinationIndex) {
+		List<GameMinProjection> list = gameRepository.searchByList(listId);
+		GameMinProjection obj = list.remove(destinationIndex);
+		list.add(destinationIndex, obj);
+		int min = sourceIndex < destinationIndex ? sourceIndex : destinationIndex;
+		int max = sourceIndex < destinationIndex ? destinationIndex : sourceIndex;
+		for (int i = min; i <= max; i++) {
+			gameListRepository.updateBelongingPosition(listId, list.get(i).getId(), i);
+		}
+
+	}
 
 }
