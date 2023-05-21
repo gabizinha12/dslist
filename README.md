@@ -1,5 +1,11 @@
 # Intensivão Java Spring
 
+## Projeto DSList
 
+### Ferramentas usadas
 
-### Projeto DSList
+- Spring Boot
+- PostgreSQL
+- H2 Database
+- JPA
+- Docker
